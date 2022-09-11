@@ -1,9 +1,123 @@
 <template>
-  <div>首页</div>
+  <div>
+    <van-nav-bar class="nav-bar">
+      <template #title>
+        <van-button
+          :border="false"
+          type="default"
+          size="small"
+          round
+          icon="search"
+          >搜索</van-button
+        >
+      </template>
+    </van-nav-bar>
+    <van-tabs v-model="active" :swipeable="true">
+      <van-tab :title="item.name" v-for="item in channels" :key="item.id">
+        <article-list-vue :id="item.id"></article-list-vue>
+      </van-tab>
+      <span class="toutiao toutiao-gengduo"></span>
+    </van-tabs>
+  </div>
 </template>
 
 <script>
-export default {}
+import { getChannelAPI } from '@/api'
+import articleListVue from './components/articleList.vue'
+
+export default {
+  components: {
+    articleListVue
+  },
+  data() {
+    return {
+      active: 2,
+      channels: []
+    }
+  },
+  methods: {
+    // 请求 用户频道接口
+    async getChannel() {
+      try {
+        const { data } = await getChannelAPI()
+        this.channels = data.data.channels
+      } catch (error) {
+        if (!error.response) {
+          throw error
+        } else {
+          error.response.status === 507 && this.$toast.fail('请刷新')
+        }
+      }
+    }
+  },
+  created() {
+    this.getChannel()
+  }
+}
 </script>
 
-<style></style>
+<style scoped lang="less">
+.nav-bar {
+  background-color: #1989fa;
+  .van-button--default {
+    width: 7.4rem;
+  }
+  :deep(.van-nav-bar__title) {
+    max-width: none;
+  }
+  :deep(.van-button--default) {
+    background-color: #5babfb;
+    border: 0;
+  }
+}
+/* tabs导航条样式 */
+/* tabs导航条样式 */
+:deep(.van-tabs__wrap) {
+  padding-right: 66px;
+
+  .van-tabs__nav {
+    padding-left: 0;
+    padding-right: 0;
+
+    /* tab标签 */
+    .van-tab {
+      border: 1px solid #eee;
+      width: 200px;
+      height: 82px;
+    }
+
+    /* tab标签下划线 */
+    .van-tabs__line {
+      width: 31px;
+      height: 6px;
+      background-color: #3296fa;
+      bottom: 40px;
+    }
+  }
+}
+
+/* 字体图标 */
+.toutiao-gengduo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 66px;
+  height: 82px;
+  font-size: 40px;
+  line-height: 82px;
+  text-align: center;
+  opacity: 0.6;
+  border-bottom: 1px solid #eee;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 70%;
+    width: 1px;
+    background-image: url('~@/assets/images/gradient-gray-line.png');
+  }
+}
+</style>
