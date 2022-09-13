@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      const PENDING = 'pending'
+      const FULFILLED = 'fulfilled'
+      const REJECTED = 'rejected'
+      class Promise {
+        value
+        reason
+        state = PENDING
+        onFulfilledCBS = []
+        onRejectedCBS = []
+        constructor(executor) {
+          const reslove = (value) => {
+            if (this.state === PENDING) {
+              this.value = value
+              this.state = FULFILLED
+              this.onFulfilledCBS.forEach((item) => item())
+            }
+          }
+          const reject = (reason) => {
+            if (this.state === PENDING) {
+              this.reason = reason
+              this.state = REJECTED
+              this.then(onFulfilled, onRejected)
+              this.onRejectedCBS.forEach((item) => item())
+            }
+          }
+          try {
+            executor(reslove, reject)
+          } catch (error) {
+            reject(error)
+          }
+        }
+        then(onFulfilled, onRejected) {
+          if (this.state === FULFILLED) {
+            onFulfilled(this.value)
+          }
+          if (this.state === REJECTED) {
+            onRejected(this.reason)
+          }
+          if (this.state === PENDING) {
+            this.onFulfilledCBS.push(() => {
+              onFulfilled(this.value)
+            })
+            this.onRejectedCBS.push(() => {
+              onFulfilled(this.reason)
+            })
+          }
+        }
+      }
+      const p = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve('成功')
+        }, 1000)
+        // reject('失败')
+      })
+      p.then(
+        (res) => console.log('第yi此'),
+        (err) => console.log(err)
+      )
+      p.then(
+        (res) => console.log('第二此'),
+        (err) => console.log(err)
+      )
+    </script>
+  </body>
+</html>

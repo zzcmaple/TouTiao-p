@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- 顶部搜索 -->
     <van-nav-bar class="nav-bar">
       <template #title>
         <van-button
@@ -12,27 +13,43 @@
         >
       </template>
     </van-nav-bar>
+    <!-- 导航栏 -->
     <van-tabs v-model="active" :swipeable="true">
       <van-tab :title="item.name" v-for="item in channels" :key="item.id">
         <article-list-vue :id="item.id"></article-list-vue>
       </van-tab>
-      <span class="toutiao toutiao-gengduo"></span>
+      <span class="toutiao toutiao-gengduo" @click="show = true"></span>
     </van-tabs>
+    <van-popup
+      v-model="show"
+      position="bottom"
+      :style="{ height: '100%' }"
+      closeable
+      close-icon-position="top-left"
+      ><channel-edit-vue
+        :myChannel="channels"
+        :active.sync="active"
+        :show.sync="show"
+      ></channel-edit-vue>
+    </van-popup>
   </div>
 </template>
 
 <script>
+import ChannelEditVue from './components/ChannelEdit.vue'
 import { getChannelAPI } from '@/api'
 import articleListVue from './components/articleList.vue'
 
 export default {
   components: {
-    articleListVue
+    articleListVue,
+    ChannelEditVue
   },
   data() {
     return {
-      active: 2,
-      channels: []
+      active: 0,
+      channels: [],
+      show: false
     }
   },
   methods: {
