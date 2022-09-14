@@ -5,7 +5,8 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    token: {}
+    token: {},
+    myChannels: []
   },
   getters: {
     isLogin(state) {
@@ -15,6 +16,9 @@ export default new Vuex.Store({
   mutations: {
     SET_TOKEN(state, payload) {
       state.token = payload
+    },
+    SET_MYCHANNELS(state, payload) {
+      state.myChannels = payload
     }
   },
   actions: {},
@@ -23,8 +27,8 @@ export default new Vuex.Store({
     createdPersistedstate({
       key: 'HEIMA-TOUTIAO',
       storage: window.localStorage,
-      reducer({ token }) {
-        return { token }
+      reducer({ token, myChannels }) {
+        return { token, myChannels }
       }
     })
   ]

@@ -27,9 +27,12 @@
       closeable
       close-icon-position="top-left"
       ><channel-edit-vue
+        v-if="show"
         :myChannel="channels"
         :active.sync="active"
         :show.sync="show"
+        @delchannel="delchannel"
+        @addchannel="addchannel"
       ></channel-edit-vue>
     </van-popup>
   </div>
@@ -37,9 +40,9 @@
 
 <script>
 import ChannelEditVue from './components/ChannelEdit.vue'
-import { getChannelAPI } from '@/api'
+import { getChannelAPI, delChannelAPI, addChannelAPI } from '@/api'
 import articleListVue from './components/articleList.vue'
-
+import { mapGetters, mapMutations, mapState } from 'vuex'
 export default {
   components: {
     articleListVue,
@@ -52,7 +55,11 @@ export default {
       show: false
     }
   },
+  created() {
+    this.initChannels()
+  },
   methods: {
+    ...mapMutations(['SET_MYCHANNELS']),
     // 请求 用户频道接口
     async getChannel() {
       try {
@@ -65,10 +72,62 @@ export default {
           error.response.status === 507 && this.$toast.fail('请刷新')
         }
       }
+    },
+    async delchannel(id) {
+      const newChannels = this.channels.filter((item) => {
+        return item.id !== id
+      })
+      try {
+        if (this.isLogin) {
+          await delChannelAPI(id)
+        } else {
+          // 我的频道放到本地存储
+          this.SET_MYCHANNELS(newChannels)
+        }
+        this.channels = newChannels
+        this.$toast.success('删除频道成功')
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          this.$toast.fail('用户登陆失效，请重新登录')
+        } else {
+          throw error
+        }
+      }
+    },
+    async addchannel(item) {
+      const newChannels = [...this.channels, item]
+      try {
+        if (this.isLogin) {
+          await addChannelAPI(item.id, this.channels.length)
+        } else {
+          // 我的频道放到本地存储
+          this.SET_MYCHANNELS(newChannels)
+        }
+        this.channels.push(item)
+        this.$toast.success('添加频道成功')
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          this.$toast.fail('用户登陆失效，请重新登录')
+        } else {
+          throw error
+        }
+      }
+    },
+    initChannels() {
+      if (this.isLogin) {
+        this.getChannel()
+      } else {
+        if (this.myChannels.length === 0) {
+          this.getChannel()
+        } else {
+          this.channels = this.myChannels
+        }
+      }
     }
   },
-  created() {
-    this.getChannel()
+  computed: {
+    ...mapGetters(['isLogin']),
+    ...mapState(['myChannels'])
   }
 }
 </script>

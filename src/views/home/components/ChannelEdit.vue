@@ -29,6 +29,7 @@
           v-for="item in recommendChannels"
           :key="item.id"
           :text="item.name"
+          @click="$emit('addchannel', item)"
         >
           <template #icon>
             <van-icon name="plus" />
@@ -65,7 +66,7 @@ export default {
     },
     handleMyChannels(item, index) {
       if (this.isEdit && item.name !== '推荐') {
-        console.log('删除频道')
+        this.$emit('delchannel', item.id)
       } else {
         this.$emit('update:active', index)
         this.$emit('update:show', false)

@@ -22,38 +22,69 @@
             if (this.state === PENDING) {
               this.value = value
               this.state = FULFILLED
-              this.onFulfilledCBS.forEach((item) => item())
+              this.onFulfilledCBS.forEach((item) => {
+                item()
+              })
             }
           }
           const reject = (reason) => {
             if (this.state === PENDING) {
               this.reason = reason
               this.state = REJECTED
-              this.then(onFulfilled, onRejected)
-              this.onRejectedCBS.forEach((item) => item())
+              this.onRejectedCBS.forEach((item) => {
+                item()
+              })
             }
           }
           try {
             executor(reslove, reject)
           } catch (error) {
             reject(error)
+            return
           }
         }
         then(onFulfilled, onRejected) {
-          if (this.state === FULFILLED) {
-            onFulfilled(this.value)
-          }
-          if (this.state === REJECTED) {
-            onRejected(this.reason)
-          }
-          if (this.state === PENDING) {
-            this.onFulfilledCBS.push(() => {
-              onFulfilled(this.value)
-            })
-            this.onRejectedCBS.push(() => {
-              onFulfilled(this.reason)
-            })
-          }
+          const p2 = new Promise((reslove, reject) => {
+            if (this.state === FULFILLED) {
+              queueMicrotask(() => {
+                try {
+                  onFulfilled(this.value)
+                } catch (error) {
+                  reject(error)
+                }
+              })
+            }
+            if (this.state === REJECTED) {
+              queueMicrotask(() => {
+                try {
+                  onRejected(this.reason)
+                } catch (error) {
+                  reject(err)
+                }
+              })
+            }
+            if (this.state === PENDING) {
+              this.onFulfilledCBS.push(() => {
+                queueMicrotask(() => {
+                  try {
+                    onFulfilled(this.value)
+                  } catch (error) {
+                    reject(error)
+                  }
+                })
+              })
+              this.onRejectedCBS.push(() => {
+                queueMicrotask(() => {
+                  try {
+                    onRejected(this.reason)
+                  } catch (error) {
+                    reject(err)
+                  }
+                })
+              })
+            }
+          })
+          return p2
         }
       }
       const p = new Promise((resolve, reject) => {
@@ -63,13 +94,14 @@
         // reject('失败')
       })
       p.then(
-        (res) => console.log('第yi此'),
+        (res) => console.log('第yi此', a.a),
         (err) => console.log(err)
       )
       p.then(
         (res) => console.log('第二此'),
         (err) => console.log(err)
       )
+      // p.then().then().then()
     </script>
   </body>
 </html>
