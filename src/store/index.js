@@ -6,7 +6,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     token: {},
-    myChannels: []
+    myChannels: [],
+    history: []
   },
   getters: {
     isLogin(state) {
@@ -19,6 +20,9 @@ export default new Vuex.Store({
     },
     SET_MYCHANNELS(state, payload) {
       state.myChannels = payload
+    },
+    SET_HISTORY(state, arr) {
+      state.history = arr
     }
   },
   actions: {},
@@ -27,8 +31,8 @@ export default new Vuex.Store({
     createdPersistedstate({
       key: 'HEIMA-TOUTIAO',
       storage: window.localStorage,
-      reducer({ token, myChannels }) {
-        return { token, myChannels }
+      reducer({ token, myChannels, history }) {
+        return { token, myChannels, history }
       }
     })
   ]

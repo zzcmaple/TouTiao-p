@@ -4,6 +4,7 @@
     <van-nav-bar class="nav-bar">
       <template #title>
         <van-button
+          to="/search"
           :border="false"
           type="default"
           size="small"
