@@ -32,3 +32,52 @@ export const getUserInfoAPI = () => {
     // }
   })
 }
+
+// 更新用户头像
+
+export const updatePhotoAPI = (file) => {
+  const fd = new FormData()
+  fd.append('photo', file)
+  return request({
+    url: '/v1_0/user/photo',
+    method: 'PATCH',
+    data: fd
+  })
+}
+
+// 获取用户详细资料
+
+export const getUserDeInfoAPI = () => {
+  return request({
+    url: '/v1_0/user/profile'
+  })
+}
+
+// 编辑用户详细资料
+export const updateUserInfoAPI = (data) => {
+  return request({
+    url: '/v1_0/user/profile',
+    method: 'PATCH',
+    data
+  })
+}
+
+// 关注用户
+export const followUsersAPI = (target) => {
+  return request({
+    url: '/v1_0/user/followings',
+    method: 'POST',
+    data: {
+      target
+    }
+  })
+}
+
+// 取消关注
+
+export const unsubscribeAPI = (id) => {
+  return request({
+    url: `/v1_0/user/followings/${id}`,
+    method: 'DELETE'
+  })
+}

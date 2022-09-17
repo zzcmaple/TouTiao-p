@@ -1,24 +1,34 @@
 <template>
-  <div>
+  <div
+    @click="
+      $router.push({
+        path: `/detail?articleId=${item.art_id}`
+      })
+    "
+  >
     <!-- 没有图片 -->
     <van-cell :title="item.title" :label="label" v-if="item.cover.type === 0" />
     <!-- 一张图片 -->
-
     <van-cell
       :title="item.title"
       :label="label"
       v-else-if="item.cover.type === 1"
     >
-      <van-image :src="item.cover.images[0]"></van-image>
+      <van-image
+        :src="item.cover.images[0]"
+        width="115"
+        height="73"
+      ></van-image>
     </van-cell>
     <!-- 三张图片 -->
-
-    <van-cell :title="item.title" value="内容" v-else>
+    <van-cell :title="item.title" v-else>
       <template #label>
         <van-image
           v-for="(item, index) in item.cover.images"
           :key="index"
           :src="item"
+          width="100"
+          height="100"
         ></van-image>
         <p>{{ label }}</p>
       </template>
@@ -48,4 +58,12 @@ export default {
 }
 </script>
 
-<style></style>
+<style scoped lang="less">
+:deep(.van-cell__label) {
+  display: flex;
+  flex-wrap: wrap;
+  :deep(.van-image) {
+    flex: 33.3333%;
+  }
+}
+</style>

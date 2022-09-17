@@ -21,7 +21,7 @@
           <van-col span="6"></van-col>
           <van-col span="6">
             <van-row type="flex" justify="center">
-              <van-button size="mini" round>编辑资料</van-button>
+              <van-button size="mini" round to="user">编辑资料</van-button>
             </van-row>
           </van-col>
         </van-row>
@@ -101,7 +101,6 @@ export default {
       try {
         if (!this.isLogin) return
         const { data } = await getUserInfoAPI()
-        console.log(data)
         this.userInfo = data.data
       } catch (error) {
         if (error.response && error.response.status === 401) {
