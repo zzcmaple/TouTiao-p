@@ -20,6 +20,7 @@
     </van-cell>
     <article class="markdown-body" v-html="artileContent.content"></article>
     <van-divider>正文结束</van-divider>
+    <!-- 评论弹层 -->
     <van-list
       v-model="loading"
       :finished="finished"
@@ -27,11 +28,29 @@
       :error.sync="error"
       error-text="请求失败，点击重新加载"
       @load="onLoad"
-      offset="1000"
+      offset="300"
       :immediate-check="false"
     >
-      <Comment :articleComment="articleComment"></Comment>
+      <Comment :results="results" @showReply="showReply"></Comment>
     </van-list>
+    <!-- 回复评论弹层 -->
+    <van-popup
+      v-model="showReplay"
+      position="bottom"
+      :style="{ height: '100%' }"
+    >
+      <ReplayComment
+        @colseReplayComment="showReplay = false"
+        @getReplayList="getReplayList"
+        @changeList="replayList.unshift($event)"
+        @updateResults="updateResults"
+        :replayList="replayList"
+        :end_id="end_id === null ? 1 : end_id"
+        :currentComment="currentComment"
+        :loadingRelay="loadingRelay"
+        ref="replay"
+      ></ReplayComment>
+    </van-popup>
   </div>
 </template>
 
@@ -39,10 +58,17 @@
 import dayjs from '@/utils/dayjs'
 import Comment from '@/views/detail/components/comment.vue'
 import { getCommentAPI, followUsersAPI, unsubscribeAPI } from '@/api'
+import ReplayComment from './replayComment.vue'
 export default {
-  components: { Comment },
+  components: { Comment, ReplayComment },
   props: {
     artileContent: {
+      type: Object,
+      default: () => {
+        return {}
+      }
+    },
+    newObj: {
       type: Object,
       default: () => {
         return {}
@@ -54,23 +80,51 @@ export default {
       loading: false,
       finished: false,
       error: false,
-      articleComment: {},
-      follow: false
+      lastId: '',
+      end_id: '',
+      results: [],
+      follow: false,
+      replayList: [],
+      showReplay: false,
+      replayId: '',
+      currentComment: {},
+      loadingRelay: false
     }
   },
   created() {},
   methods: {
     onLoad() {
-      this.getComment('a', this.$route.query.articleId)
-      this.loading = false
-      this.finished = true
+      if (this.lastId === null) {
+        this.finished = true
+        return
+      }
+      this.getComment('a', this.$route.query.articleId, this.lastId, 9)
     },
-    async getComment(type, source) {
+    async getComment(type, source, offset, limit) {
       try {
-        const data = await getCommentAPI(type, source)
-        this.articleComment = data.data.data
-        this.$emit('update:changeNum', this.articleComment.total_count)
-      } catch (error) {
+        const data = await getCommentAPI(type, source, offset, limit)
+
+        if (type === 'a') {
+          this.lastId = data.data.data.last_id
+          // 这个用来记录请求文章评论新数据的起始id
+          if (data.data.data.results.length < 9) {
+            this.finished = true
+          }
+          // 一旦数据变化 就往结果里添加新的数据
+          this.results.push(...data.data.data.results)
+          // 出发父组件的事件 ，让评论数 时时更新
+          this.$emit('update:changeNum', this.results.length)
+          // 只有再请求完后 再把list的loading更新
+          this.loading = false
+        } else {
+          this.end_id = data.data.data.last_id
+          this.replayList.push(...data.data.data.results)
+          this.$refs.replay.loading = false
+          if (this.end_id === null) {
+            this.$refs.replay.finished = true
+          }
+        }
+      } catch (err) {
         this.error = true
       }
     },
@@ -101,6 +155,23 @@ export default {
           this.$toast.fail('刷新试试看')
         }
       }
+    },
+    showReply(item) {
+      // 判断如果点击的评论不一样 那就清空回复评论 重新请求
+      if (this.replayId !== item.com_id) {
+        this.replayList = []
+        this.replayId = item.com_id
+        this.getReplayList()
+      }
+      // 最后都执行这两步
+      this.currentComment = item
+      this.showReplay = true
+    },
+    getReplayList() {
+      this.getComment('c', this.replayId, this.end_id, 5)
+    },
+    updateResults(count) {
+      this.currentComment.reply_count = count
     }
   },
   computed: {
@@ -110,8 +181,11 @@ export default {
   },
   watch: {
     artileContent(newValue) {
-      this.getComment('a', this.$route.query.articleId)
       this.follow = newValue.is_followed
+    },
+    newObj(newValue) {
+      this.results.unshift(newValue)
+      this.$emit('update:changeNum', this.results.length)
     }
   }
 }

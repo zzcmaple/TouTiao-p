@@ -52,9 +52,13 @@ export default {
         this.preTimeStamp = data.data.pre_timestamp
       } catch (error) {
         if (!error.response || error.message?.status === 507) {
+          this.$toast.fail('刷新重试')
           throw error
         } else if (error.response?.status === 400) {
+          this.$toast.fail('刷新重试')
           throw new Error(error.response.data.message)
+        } else {
+          this.$toast.fail('登陆失败')
         }
       }
     },

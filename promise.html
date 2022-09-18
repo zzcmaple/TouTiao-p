@@ -48,7 +48,8 @@
             if (this.state === FULFILLED) {
               queueMicrotask(() => {
                 try {
-                  onFulfilled(this.value)
+                 const x = onFulfilled(this.value)
+                  reslovePromise(x,p2,reslove,reject)
                 } catch (error) {
                   reject(error)
                 }
@@ -57,7 +58,8 @@
             if (this.state === REJECTED) {
               queueMicrotask(() => {
                 try {
-                  onRejected(this.reason)
+                const x =  onRejected(this.reason)
+                   reslovePromise(x,p2,reslove,reject)
                 } catch (error) {
                   reject(err)
                 }
@@ -67,7 +69,8 @@
               this.onFulfilledCBS.push(() => {
                 queueMicrotask(() => {
                   try {
-                    onFulfilled(this.value)
+                   const x = onFulfilled(this.value)
+                     reslovePromise(x,p2,reslove,reject)
                   } catch (error) {
                     reject(error)
                   }
@@ -76,7 +79,8 @@
               this.onRejectedCBS.push(() => {
                 queueMicrotask(() => {
                   try {
-                    onRejected(this.reason)
+                   const x = onRejected(this.reason)
+                   reslovePromise(x,p2,reslove,reject)
                   } catch (error) {
                     reject(err)
                   }
@@ -87,6 +91,7 @@
           return p2
         }
       }
+      function reslovePromise(x,p2,reslove,reject)
       const p = new Promise((resolve, reject) => {
         setTimeout(() => {
           resolve('成功')

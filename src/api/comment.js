@@ -2,12 +2,14 @@ import request from '@/utils/request'
 
 // 获取文章评论 或 对评论的回复
 
-export const getCommentAPI = (type, source) => {
+export const getCommentAPI = (type, source, offset, limit) => {
   return request({
     url: '/v1_0/comments',
     params: {
       type,
-      source
+      source,
+      offset,
+      limit
     }
   })
 }

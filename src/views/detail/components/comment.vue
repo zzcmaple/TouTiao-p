@@ -1,10 +1,6 @@
 <template>
   <div>
-    <van-cell
-      v-for="item in articleComment.results"
-      :key="item.com_id"
-      :title="item.aut_name"
-    >
+    <van-cell v-for="item in results" :key="item.com_id" :title="item.aut_name">
       <van-icon name="good-job-o" /><span class="awesome">赞</span>
       <template #icon>
         <van-image
@@ -19,7 +15,7 @@
         <div class="commentInfo">{{ item.content }}</div>
         <div class="time">
           <span>{{ time(item.pubdate) }}</span>
-          <van-button type="default" round
+          <van-button type="default" round @click="$emit('showReply', item)"
             >回复{{ item.reply_count }}</van-button
           >
         </div>
@@ -32,10 +28,13 @@
 import dayjs from '@/utils/dayjs'
 export default {
   props: {
-    articleComment: {
-      type: Object,
+    results: {
+      type: Array,
       required: true
     }
+  },
+  data() {
+    return {}
   },
   methods: {
     time(item) {
@@ -45,7 +44,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .awesome {
   color: #333;
   margin-left: 20px;
